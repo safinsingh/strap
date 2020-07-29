@@ -15,13 +15,13 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "strap",
-	Short: "bootstrap your project templates with ease",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
+	Short: "strap: bootstrap your project templates with ease",
+	// Run: func(cmd *cobra.Command, args []string) {
+	// 	if len(args) == 0 {
+	// 		cmd.Help()
+	// 		os.Exit(0)
+	// 	}
+	// },
 }
 
 // Execute runs the main application
