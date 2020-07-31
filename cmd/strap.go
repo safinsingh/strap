@@ -69,6 +69,8 @@ func updateProject(args []string) {
 
 		if err := ioutil.WriteFile("./.strap.json", data, 644); err != nil {
 			log.Fatalln("Failed to write to ./.strap.json. Run in verbose mode for more details.")
+		} else {
+			successPrint("Successfully bumped version to " + newVersion + "!")
 		}
 	}
 }
