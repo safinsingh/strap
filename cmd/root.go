@@ -38,7 +38,20 @@ func Execute() {
 		},
 	}
 
-	rootCmd.AddCommand(initialize, config, validate)
+	var update = &cobra.Command{
+		Use:   "update",
+		Short: "Update current package to x.y+1",
+		Run: func(cmd *cobra.Command, args []string) {
+			updateProject(args)
+		},
+	}
+
+	rootCmd.AddCommand(
+		initialize,
+		config,
+		validate,
+		update,
+	)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

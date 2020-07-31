@@ -5,6 +5,10 @@ type ProjectConfig struct {
 	Commands ProjectCommands `json:"commands"`
 }
 
+func (p *ProjectConfig) BumpVersion(version string) {
+	p.Version = version
+}
+
 type ProjectCommands struct {
 	Default DefaultCommand `json:"default"`
 }
