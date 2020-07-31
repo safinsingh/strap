@@ -2,9 +2,13 @@ name: Go
 
 on:
   push:
-    branches: [ master, cobra ]
+    branches: 
+    - master
+    - cobra
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - cobra
 
 jobs:
 
