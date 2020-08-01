@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -21,12 +22,15 @@ func initProject() {
 	}
 }`
 
-	infoPrint("Creating ./.strap.json...")
-
-	if err := ioutil.WriteFile("./.strap.json", []byte(jsonTemplate), 0644); err != nil {
-		log.Fatalln("Failed to write to ./.strap.json. Run in verbose mode for more details.")
+	if !fileExists("./.strap.json") {
+		infoPrint("Creating ./.strap.json...")
+		if err := ioutil.WriteFile("./.strap.json", []byte(jsonTemplate), 0644); err != nil {
+			log.Fatalln(errors.Wrap(err, "Failed to write to ./.strap.json."))
+		} else {
+			successPrint("Successfully wrote to ./.strap.json!")
+		}
 	} else {
-		successPrint("Successfully wrote to ./.strap.json!")
+		failPrint("./.strap.json alread exists. Please remove it if you would like to re-initialize your project")
 	}
 }
 
@@ -41,6 +45,7 @@ func parseProjectCfg() ProjectConfig {
 		log.Fatalln(errors.Wrap(err, "Failed to unmarshal JSON into struct. Please check your config file."))
 	}
 
+	successPrint("Successfully validated configuration!")
 	return cfg
 }
 
@@ -56,10 +61,10 @@ func updateProject(args []string) {
 		log.Fatalln(errors.Wrap(err, "Failed to convert "+strings.Split(currentVersion, ".")[1]+"to integer"))
 	}
 
-	newVersion := major + "." + strconv.Itoa(minor+1)
-
 	if len(args) == 0 {
-		infoPrint("No version number specified. Bumping to " + newVersion + ".")
+		newVersion := major + "." + strconv.Itoa(minor+1)
+
+		infoPrint("No version number specified. Bumping " + config.Name + " to version " + newVersion + ".")
 		config.BumpVersion(newVersion)
 
 		data, err := json.MarshalIndent(config, "", "  ")
@@ -70,7 +75,38 @@ func updateProject(args []string) {
 		if err := ioutil.WriteFile("./.strap.json", data, 644); err != nil {
 			log.Fatalln("Failed to write to ./.strap.json. Run in verbose mode for more details.")
 		} else {
-			successPrint("Successfully bumped version to " + newVersion + "!")
+			successPrint("Successfully bumped" + config.Name + " to version " + newVersion + "!")
+		}
+	} else if len(args) == 1 {
+		newVersionSlice := strings.Split(args[0], ".")
+
+		if len(newVersionSlice) == 2 {
+			if _, err := strconv.Atoi(newVersionSlice[0]); err == nil {
+				if _, err2 := strconv.Atoi(newVersionSlice[1]); err2 == nil {
+					successPrint("Valid version number " + args[0] + " has been supplied.")
+				} else {
+					log.Fatalln(errors.Wrap(err, "Invalid minor version number supplied."))
+				}
+			} else {
+				log.Fatalln(errors.Wrap(err, "Invalid major version number supplied."))
+			}
+		} else {
+			failPrint("Invalid version number provided. Please use the format x.y.")
+			os.Exit(1)
+		}
+
+		infoPrint("Bumping " + config.Name + " to version " + args[0] + ".")
+		config.BumpVersion(args[0])
+
+		data, err := json.MarshalIndent(config, "", "  ")
+		if err != nil {
+			log.Fatalln(errors.Wrap(err, "Internal error: failed to marshal config struct"))
+		}
+
+		if err := ioutil.WriteFile("./.strap.json", data, 644); err != nil {
+			log.Fatalln("Failed to write to ./.strap.json. Run in verbose mode for more details.")
+		} else {
+			successPrint("Successfully bumped " + config.Name + " to version " + args[0] + "!")
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package cmd
 
 type ProjectConfig struct {
+	Name     string          `json:"name"`
 	Version  string          `json:"version"`
 	Commands ProjectCommands `json:"commands"`
 }
