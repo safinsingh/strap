@@ -21,4 +21,5 @@ require (
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
+	mvdan.cc/gofumpt v0.0.0-20200731215418-7036e194a6ab // indirect
 )

@@ -12,6 +12,8 @@ var rootCmd = &cobra.Command{
 	Short: "strap: bootstrap your project templates with ease",
 }
 
+var version = "0.1"
+
 // Execute is the command root
 func Execute() {
 	var initialize = &cobra.Command{
@@ -46,9 +48,16 @@ func Execute() {
 		},
 	}
 
+	var version = &cobra.Command{
+		Use:   "version",
+		Short: "Print the current version of strap",
+		Run: func(cmd *cobra.Command, args []string) {
+			successPrint("strap " + version)
+		},
+	}
+
 	get.Flags().StringP("repo", "r", "", "remote repository to clone")
 	get.Flags().StringP("output", "o", "", "output directory for clone")
-
 	validate.Flags().BoolP("global", "g", false, "affect global or local settings")
 	initialize.Flags().BoolP("global", "g", false, "affect global or local settings")
 	update.Flags().StringP("version", "v", "", "version number to update to")
@@ -58,6 +67,7 @@ func Execute() {
 		validate,
 		update,
 		get,
+		version,
 	)
 
 	if err := rootCmd.Execute(); err != nil {
