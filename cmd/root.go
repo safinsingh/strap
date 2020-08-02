@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	var initialize = &cobra.Command{
 		Use:   "init",
-		Short: "Creates .strap.json in current dir",
+		Short: "creates .strap.json in current directory",
 		Run: func(cmd *cobra.Command, args []string) {
 			initProject()
 		},
@@ -24,7 +24,7 @@ func Execute() {
 
 	var config = &cobra.Command{
 		Use:   "config",
-		Short: "Creates ~/.strap.global.json",
+		Short: "creates ~/.strap.global.json",
 		Run: func(cmd *cobra.Command, args []string) {
 			// initializer()
 		},
@@ -32,7 +32,7 @@ func Execute() {
 
 	var validate = &cobra.Command{
 		Use:   "validate",
-		Short: "Validates ./.strap.json",
+		Short: "validates ./.strap.json",
 		Run: func(cmd *cobra.Command, args []string) {
 			parseProjectCfg()
 		},
@@ -40,11 +40,13 @@ func Execute() {
 
 	var update = &cobra.Command{
 		Use:   "update",
-		Short: "Update current package to x.y+1",
+		Short: "update current package to x.y+1",
 		Run: func(cmd *cobra.Command, args []string) {
-			updateProject(args)
+			updateProject(cmd)
 		},
 	}
+
+	update.Flags().StringP("version", "v", "", "version number to update to")
 
 	rootCmd.AddCommand(
 		initialize,

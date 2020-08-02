@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 )
 
 func initProject() {
@@ -49,7 +51,7 @@ func parseProjectCfg() ProjectConfig {
 	return cfg
 }
 
-func updateProject(args []string) {
+func updateProject(cmd *cobra.Command) {
 	config := parseProjectCfg()
 	currentVersion := config.Version
 
@@ -61,7 +63,8 @@ func updateProject(args []string) {
 		log.Fatalln(errors.Wrap(err, "Failed to convert "+strings.Split(currentVersion, ".")[1]+"to integer"))
 	}
 
-	if len(args) == 0 {
+	context, _ := cmd.Flags().GetString("version")
+	if context == "" {
 		newVersion := major + "." + strconv.Itoa(minor+1)
 
 		infoPrint("No version number specified. Bumping " + config.Name + " to version " + newVersion + ".")
@@ -77,13 +80,13 @@ func updateProject(args []string) {
 		} else {
 			successPrint("Successfully bumped" + config.Name + " to version " + newVersion + "!")
 		}
-	} else if len(args) == 1 {
-		newVersionSlice := strings.Split(args[0], ".")
+	} else {
+		newVersionSlice := strings.Split(context, ".")
 
 		if len(newVersionSlice) == 2 {
 			if _, err := strconv.Atoi(newVersionSlice[0]); err == nil {
 				if _, err2 := strconv.Atoi(newVersionSlice[1]); err2 == nil {
-					successPrint("Valid version number " + args[0] + " has been supplied.")
+					successPrint("Valid version number " + context + " has been supplied.")
 				} else {
 					log.Fatalln(errors.Wrap(err, "Invalid minor version number supplied."))
 				}
@@ -95,8 +98,8 @@ func updateProject(args []string) {
 			os.Exit(1)
 		}
 
-		infoPrint("Bumping " + config.Name + " to version " + args[0] + ".")
-		config.BumpVersion(args[0])
+		infoPrint("Bumping " + config.Name + " to version " + context + ".")
+		config.BumpVersion(context)
 
 		data, err := json.MarshalIndent(config, "", "  ")
 		if err != nil {
@@ -106,7 +109,11 @@ func updateProject(args []string) {
 		if err := ioutil.WriteFile("./.strap.json", data, 644); err != nil {
 			log.Fatalln("Failed to write to ./.strap.json. Run in verbose mode for more details.")
 		} else {
-			successPrint("Successfully bumped " + config.Name + " to version " + args[0] + "!")
+			successPrint("Successfully bumped " + config.Name + " to version " + context + "!")
 		}
 	}
+}
+
+func defaultRun(args []string) {
+	fmt.Println(args)
 }
