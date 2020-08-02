@@ -50,6 +50,8 @@ func Execute() {
 	}
 
 	rootCmd.Flags().StringP("repo", "r", "", "remote repository to clone")
+	rootCmd.Flags().StringP("output", "o", "", "output directory for clone")
+
 	update.Flags().StringP("version", "v", "", "version number to update to")
 
 	rootCmd.AddCommand(

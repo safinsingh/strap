@@ -63,7 +63,11 @@ func updateProject(cmd *cobra.Command) {
 		log.Fatalln(errors.Wrap(err, "Failed to convert "+strings.Split(currentVersion, ".")[1]+"to integer"))
 	}
 
-	context, _ := cmd.Flags().GetString("version")
+	context, err := cmd.Flags().GetString("version")
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "failed to parse version flag"))
+	}
+
 	if context == "" {
 		newVersion := major + "." + strconv.Itoa(minor+1)
 
@@ -114,23 +118,37 @@ func updateProject(cmd *cobra.Command) {
 	}
 }
 
+func getOutputDir(name, output string) string {
+	if output == "" {
+		return name
+	}
+	return output
+}
+
 func defaultRun(cmd *cobra.Command) {
-	repoFlag, _ := cmd.Flags().GetString("repo")
-	// user := strings.Split(repoFlag, "/")[0]
+	repoFlag, err := cmd.Flags().GetString("repo")
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "failed to parse repo flag"))
+	}
 	repo := strings.Split(repoFlag, "/")[1]
+
+	outputFlag, err := cmd.Flags().GetString("output")
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "failed to parse output flag"))
+	}
 
 	if repoFlag == "" {
 		cmd.Help()
 		os.Exit(0)
 	} else {
-		if _, err := git.PlainClone(repo, false, &git.CloneOptions{
+		if _, err := git.PlainClone(getOutputDir(repo, outputFlag), false, &git.CloneOptions{
 			URL:      "https://github.com/" + repoFlag,
 			Progress: os.Stdout,
 		}); err != nil {
 			log.Fatalln(errors.Wrap(err, "Error cloning repository "+repoFlag))
 		}
 
-		if err := os.RemoveAll(repo + "/.git"); err != nil {
+		if err := os.RemoveAll(getOutputDir(repo, outputFlag) + "/.git"); err != nil {
 			log.Fatalln(errors.Wrap(err, "Error recursively removing .git"))
 		}
 	}
