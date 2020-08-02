@@ -10,6 +10,9 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "strap",
 	Short: "strap: bootstrap your project templates with ease",
+	Run: func(cmd *cobra.Command, args []string) {
+		defaultRun(cmd)
+	},
 }
 
 // Execute is the command root
@@ -46,6 +49,7 @@ func Execute() {
 		},
 	}
 
+	rootCmd.Flags().StringP("repo", "r", "", "remote repository to clone")
 	update.Flags().StringP("version", "v", "", "version number to update to")
 
 	rootCmd.AddCommand(

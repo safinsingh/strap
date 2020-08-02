@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -107,13 +107,31 @@ func updateProject(cmd *cobra.Command) {
 		}
 
 		if err := ioutil.WriteFile("./.strap.json", data, 644); err != nil {
-			log.Fatalln("Failed to write to ./.strap.json. Run in verbose mode for more details.")
+			log.Fatalln(errors.Wrap(err, "Failed to write to ./.strap.json."))
 		} else {
 			successPrint("Successfully bumped " + config.Name + " to version " + context + "!")
 		}
 	}
 }
 
-func defaultRun(args []string) {
-	fmt.Println(args)
+func defaultRun(cmd *cobra.Command) {
+	repoFlag, _ := cmd.Flags().GetString("repo")
+	// user := strings.Split(repoFlag, "/")[0]
+	repo := strings.Split(repoFlag, "/")[1]
+
+	if repoFlag == "" {
+		cmd.Help()
+		os.Exit(0)
+	} else {
+		if _, err := git.PlainClone(repo, false, &git.CloneOptions{
+			URL:      "https://github.com/" + repoFlag,
+			Progress: os.Stdout,
+		}); err != nil {
+			log.Fatalln(errors.Wrap(err, "Error cloning repository "+repoFlag))
+		}
+
+		if err := os.RemoveAll(repo + "/.git"); err != nil {
+			log.Fatalln(errors.Wrap(err, "Error recursively removing .git"))
+		}
+	}
 }
