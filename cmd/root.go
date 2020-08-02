@@ -10,55 +10,54 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "strap",
 	Short: "strap: bootstrap your project templates with ease",
-	Run: func(cmd *cobra.Command, args []string) {
-		defaultRun(cmd)
-	},
 }
 
 // Execute is the command root
 func Execute() {
 	var initialize = &cobra.Command{
 		Use:   "init",
-		Short: "creates .strap.json in current directory",
+		Short: "Initialize a local/global configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			initProject()
-		},
-	}
-
-	var config = &cobra.Command{
-		Use:   "config",
-		Short: "creates ~/.strap.global.json",
-		Run: func(cmd *cobra.Command, args []string) {
-			// initializer()
+			initSwitch(cmd)
 		},
 	}
 
 	var validate = &cobra.Command{
 		Use:   "validate",
-		Short: "validates ./.strap.json",
+		Short: "Validates local/global configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			parseProjectCfg()
+			parseCfgSwitch(cmd)
 		},
 	}
 
 	var update = &cobra.Command{
 		Use:   "update",
-		Short: "update current package to x.y+1",
+		Short: "update local package to x.y+1",
 		Run: func(cmd *cobra.Command, args []string) {
 			updateProject(cmd)
 		},
 	}
 
-	rootCmd.Flags().StringP("repo", "r", "", "remote repository to clone")
-	rootCmd.Flags().StringP("output", "o", "", "output directory for clone")
+	var get = &cobra.Command{
+		Use:   "get",
+		Short: "Get a remote repository",
+		Run: func(cmd *cobra.Command, args []string) {
+			getRepo(cmd)
+		},
+	}
 
+	get.Flags().StringP("repo", "r", "", "remote repository to clone")
+	get.Flags().StringP("output", "o", "", "output directory for clone")
+
+	validate.Flags().BoolP("global", "g", false, "affect global or local settings")
+	initialize.Flags().BoolP("global", "g", false, "affect global or local settings")
 	update.Flags().StringP("version", "v", "", "version number to update to")
 
 	rootCmd.AddCommand(
 		initialize,
-		config,
 		validate,
 		update,
+		get,
 	)
 
 	if err := rootCmd.Execute(); err != nil {

@@ -18,3 +18,7 @@ type DefaultCommand struct {
 	Steps      []string `json:"steps"`
 	Entrypoint []string `json:"entrypoint"`
 }
+
+type GlobalConfig struct {
+	Aliases map[string]string `json:"aliases"`
+}

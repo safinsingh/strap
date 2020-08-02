@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +23,8 @@ func initProject() {
 			"entrypoint": ["./exe"]
 		}
 	}
-}`
+}
+`
 
 	if !fileExists("./.strap.json") {
 		infoPrint("Creating ./.strap.json...")
@@ -47,7 +49,7 @@ func parseProjectCfg() ProjectConfig {
 		log.Fatalln(errors.Wrap(err, "Failed to unmarshal JSON into struct. Please check your config file."))
 	}
 
-	successPrint("Successfully validated configuration!")
+	successPrint("Successfully validated project configuration!")
 	return cfg
 }
 
@@ -125,12 +127,11 @@ func getOutputDir(name, output string) string {
 	return output
 }
 
-func defaultRun(cmd *cobra.Command) {
+func getRepo(cmd *cobra.Command) {
 	repoFlag, err := cmd.Flags().GetString("repo")
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "failed to parse repo flag"))
 	}
-	repo := strings.Split(repoFlag, "/")[1]
 
 	outputFlag, err := cmd.Flags().GetString("output")
 	if err != nil {
@@ -141,6 +142,8 @@ func defaultRun(cmd *cobra.Command) {
 		cmd.Help()
 		os.Exit(0)
 	} else {
+		repo := strings.Split(repoFlag, "/")[1]
+
 		if _, err := git.PlainClone(getOutputDir(repo, outputFlag), false, &git.CloneOptions{
 			URL:      "https://github.com/" + repoFlag,
 			Progress: os.Stdout,
@@ -151,5 +154,80 @@ func defaultRun(cmd *cobra.Command) {
 		if err := os.RemoveAll(getOutputDir(repo, outputFlag) + "/.git"); err != nil {
 			log.Fatalln(errors.Wrap(err, "Error recursively removing .git"))
 		}
+	}
+}
+
+func initGlobal() {
+	jsonTemplate := `{
+	"aliases": {}
+}
+`
+
+	path, err := homedir.Expand("~/.strap/")
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "Failed to expand home directory"))
+	}
+
+	_, err2 := os.Stat(path)
+	if os.IsNotExist(err2) {
+		if err := os.MkdirAll(path, 0755); err == nil {
+			if err := ioutil.WriteFile(path+"/global.json", []byte(jsonTemplate), 0644); err != nil {
+				log.Fatalln(errors.Wrap(err, "Failed to write to ~/.strap/global.json."))
+			}
+		} else {
+			log.Fatalln(errors.Wrap(err, "Failed to create ~/.strap/ folder"))
+		}
+	} else {
+		failPrint("It looks like you've already initialized a global configuration.")
+		os.Exit(1)
+	}
+}
+
+func parseGlobalCfg() GlobalConfig {
+	path, err := homedir.Expand("~/.strap/global.json")
+	if err != nil {
+		log.Fatalln("Failed to locate your global strap config file. Try running strap init --global first.")
+	}
+
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		failPrint("Failed to read ~/.strap/global.json. Try running strap init --global first.")
+		os.Exit(1)
+	}
+
+	var cfg GlobalConfig
+	if err := json.Unmarshal([]byte(data), &cfg); err != nil {
+		log.Fatalln(errors.Wrap(err, "Failed to unmarshal JSON into struct. Please check your global config file."))
+	}
+
+	successPrint("Successfully validated global configuration!")
+	return cfg
+}
+
+func parseCfgSwitch(cmd *cobra.Command) {
+	isGlobal, err := cmd.Flags().GetBool("global")
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "failed to parse global flag"))
+	}
+
+	if isGlobal {
+		parseGlobalCfg()
+	} else {
+		infoPrint("Global was not specified, parsing local config.")
+		parseProjectCfg()
+	}
+}
+
+func initSwitch(cmd *cobra.Command) {
+	isGlobal, err := cmd.Flags().GetBool("global")
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "failed to parse global flag"))
+	}
+
+	if isGlobal {
+		initGlobal()
+	} else {
+		infoPrint("Global was not specified, initializing local config.")
+		initProject()
 	}
 }
