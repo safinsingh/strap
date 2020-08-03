@@ -28,7 +28,7 @@ func initProject() {
 
 	if !fileExists("./.strap.json") {
 		infoPrint("Creating ./.strap.json...")
-		if err := ioutil.WriteFile("./.strap.json", []byte(jsonTemplate), 0644); err != nil {
+		if err := ioutil.WriteFile("./.strap.json", []byte(jsonTemplate), 0o644); err != nil {
 			log.Fatalln(errors.Wrap(err, "Failed to write to ./.strap.json."))
 		} else {
 			successPrint("Successfully wrote to ./.strap.json!")
@@ -112,7 +112,7 @@ func updateProject(cmd *cobra.Command) {
 			log.Fatalln(errors.Wrap(err, "Internal error: failed to marshal config struct"))
 		}
 
-		if err := ioutil.WriteFile("./.strap.json", data, 644); err != nil {
+		if err := ioutil.WriteFile("./.strap.json", data, 0o644); err != nil {
 			log.Fatalln(errors.Wrap(err, "Failed to write to ./.strap.json."))
 		} else {
 			successPrint("Successfully bumped " + config.Name + " to version " + context + "!")
@@ -170,8 +170,8 @@ func initGlobal() {
 
 	_, err2 := os.Stat(path)
 	if os.IsNotExist(err2) {
-		if err := os.MkdirAll(path, 0755); err == nil {
-			if err := ioutil.WriteFile(path+"/global.json", []byte(jsonTemplate), 0644); err != nil {
+		if err := os.MkdirAll(path, 0o755); err == nil {
+			if err := ioutil.WriteFile(path+"/global.json", []byte(jsonTemplate), 0o644); err != nil {
 				log.Fatalln(errors.Wrap(err, "Failed to write to ~/.strap/global.json."))
 			}
 		} else {

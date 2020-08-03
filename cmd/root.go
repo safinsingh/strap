@@ -16,7 +16,7 @@ var version = "0.1"
 
 // Execute is the command root
 func Execute() {
-	var initialize = &cobra.Command{
+	initialize := &cobra.Command{
 		Use:   "init",
 		Short: "Initialize a local/global configuration",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -24,7 +24,7 @@ func Execute() {
 		},
 	}
 
-	var validate = &cobra.Command{
+	validate := &cobra.Command{
 		Use:   "validate",
 		Short: "Validates local/global configuration",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -32,7 +32,7 @@ func Execute() {
 		},
 	}
 
-	var update = &cobra.Command{
+	update := &cobra.Command{
 		Use:   "update",
 		Short: "update local package to x.y+1",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -40,7 +40,7 @@ func Execute() {
 		},
 	}
 
-	var get = &cobra.Command{
+	get := &cobra.Command{
 		Use:   "get",
 		Short: "Get a remote repository",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -48,7 +48,7 @@ func Execute() {
 		},
 	}
 
-	var version = &cobra.Command{
+	version := &cobra.Command{
 		Use:   "version",
 		Short: "Print the current version of strap",
 		Run: func(cmd *cobra.Command, args []string) {
